@@ -5,7 +5,7 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.coderwjq.mediaplayer"
-        minSdkVersion 24
+        minSdkVersion 23
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
@@ -35,5 +35,5 @@ dependencies {
     compile 'io.reactivex.rxjava2:rxjava:2.0.9'
     // common utils
     compile 'com.luffykou:android-common-utils:1.1.3'
-    compile 'com.android.support:design:26.0.0-alpha1'
+    compile project(':vitamio')
 }

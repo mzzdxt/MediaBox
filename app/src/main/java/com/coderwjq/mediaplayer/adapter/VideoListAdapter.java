@@ -1,4 +1,4 @@
-package com.coderwjq.mediaplayer.ui.fragment;
+package com.coderwjq.mediaplayer.adapter;
 
 import android.content.Context;
 import android.database.Cursor;

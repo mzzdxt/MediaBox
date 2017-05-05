@@ -4,8 +4,7 @@ import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.database.Cursor;
 
-import com.coderwjq.mediaplayer.ui.fragment.VideoListAdapter;
-import com.coderwjq.mediaplayer.utils.CursorUtils;
+import com.coderwjq.mediaplayer.adapter.VideoListAdapter;
 
 /**
  * @Created by coderwjq on 2017/5/4 16:51.
@@ -30,7 +29,7 @@ public class MediaAsyncQueryHandler extends AsyncQueryHandler {
     protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
         // empty
         super.onQueryComplete(token, cookie, cursor);
-        CursorUtils.printCursor(cursor);
+//        CursorUtils.printCursor(cursor);
 
         // TODO:instanceof和父类比较
         if (cookie instanceof VideoListAdapter) {

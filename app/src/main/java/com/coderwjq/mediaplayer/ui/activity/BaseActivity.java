@@ -7,7 +7,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        pendingAnimation();
+        beforeSetContentView();
         super.onCreate(savedInstanceState);
         setContentView(getLayoutId());
         initView();
@@ -15,7 +15,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         initListener();
     }
 
-    protected void pendingAnimation() {
+    protected void beforeSetContentView() {
+        // empty
     }
 
 

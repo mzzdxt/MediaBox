@@ -9,6 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.coderwjq.mediaplayer.R;
+import com.coderwjq.mediaplayer.adapter.VideoListAdapter;
 import com.coderwjq.mediaplayer.bean.VideoItem;
 import com.coderwjq.mediaplayer.db.MediaAsyncQueryHandler;
 import com.coderwjq.mediaplayer.ui.activity.VideoPlayerActivity;
@@ -37,7 +38,7 @@ public class VideoFragment extends BaseFragment {
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 VideoItem videoItem = new VideoItem(cursor);
                 // 打开新界面进行播放
-                VideoPlayerActivity.startActivity(getActivity(), videoItem);
+                VideoPlayerActivity.invoke(getActivity(), videoItem);
             }
         });
     }

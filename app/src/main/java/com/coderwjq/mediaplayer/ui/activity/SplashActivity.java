@@ -13,6 +13,7 @@ import io.reactivex.functions.Consumer;
 public class SplashActivity extends BaseActivity {
 
     private Toastor mToastor;
+    private Handler mHandler = new Handler();
 
     @Override
     protected void initListener() {
@@ -31,7 +32,7 @@ public class SplashActivity extends BaseActivity {
     }
 
     private void startMainActivity() {
-        new Handler().postDelayed(new Runnable() {
+        mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 MainActivity.start(SplashActivity.this);
@@ -56,9 +57,16 @@ public class SplashActivity extends BaseActivity {
     }
 
     @Override
-    protected void pendingAnimation() {
-        super.pendingAnimation();
+    protected void beforeSetContentView() {
+        super.beforeSetContentView();
         // Activity切换的淡入淡出效果
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        mHandler.removeCallbacksAndMessages(null);
     }
 }
