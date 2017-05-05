@@ -7,18 +7,23 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        pendingAnimation();
         super.onCreate(savedInstanceState);
         setContentView(getLayoutId());
         initView();
         initData();
-        initEvent();
+        initListener();
     }
 
-    protected abstract void initEvent();
+    protected void pendingAnimation() {
+    }
 
-    protected abstract void initData();
+
+    protected abstract int getLayoutId();
 
     protected abstract void initView();
 
-    protected abstract int getLayoutId();
+    protected abstract void initData();
+
+    protected abstract void initListener();
 }

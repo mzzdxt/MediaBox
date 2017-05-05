@@ -18,6 +18,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends BaseActivity {
     private static final String TAG = "MainActivity";
@@ -33,23 +34,17 @@ public class MainActivity extends BaseActivity {
     ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
         @Override
         public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            // 获得起始位置
-            int startX = position * mMainIndicateLine.getWidth();
 
-            // 获得偏移位置
-            int offsetX = (int) (positionOffset * mMainIndicateLine.getWidth());
-
-            // 求得移动距离
-            int translationX = startX + offsetX;
-
-            // 移动指示器
-            ViewCompat.animate(mMainIndicateLine).translationX(translationX);
         }
 
         @Override
         public void onPageSelected(int position) {
             updateTab(position, mMainTvVideo, 0);
             updateTab(position, mMainTvAudio, 1);
+
+            // 更新底部状态指示器
+            float translation = position * mMainIndicateLine.getWidth();
+            ViewCompat.animate(mMainIndicateLine).translationX(translation);
         }
 
         @Override
@@ -67,7 +62,7 @@ public class MainActivity extends BaseActivity {
     }
 
     @Override
-    protected void initEvent() {
+    protected void initListener() {
         mMainActivityPagerAdatper = new MainActivityPagerAdatper(getSupportFragmentManager(), mFragmentList);
         mMainViewpager.setAdapter(mMainActivityPagerAdatper);
         mMainViewpager.addOnPageChangeListener(onPageChangeListener);
@@ -101,5 +96,17 @@ public class MainActivity extends BaseActivity {
 
         ViewCompat.animate(textView).scaleX(position == tabPosition ? 1.3f : 1.0f)
                 .scaleY(position == tabPosition ? 1.3f : 1.0f);
+    }
+
+    @OnClick({R.id.main_tv_video, R.id.main_tv_audio})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.main_tv_video:
+                mMainViewpager.setCurrentItem(0);
+                break;
+            case R.id.main_tv_audio:
+                mMainViewpager.setCurrentItem(1);
+                break;
+        }
     }
 }

@@ -11,7 +11,7 @@ import com.coderwjq.mediaplayer.R;
 
 public class MusicFragment extends BaseFragment {
     @Override
-    protected void initEvent() {
+    protected void initListener() {
 
     }
 
