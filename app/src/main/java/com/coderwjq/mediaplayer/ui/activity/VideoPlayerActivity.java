@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.support.v4.view.ViewCompat;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -23,7 +24,10 @@ import android.widget.TextView;
 
 import com.coderwjq.mediaplayer.R;
 import com.coderwjq.mediaplayer.bean.VideoItem;
+import com.coderwjq.mediaplayer.utils.ActivityBrightnessManager;
 import com.coderwjq.mediaplayer.utils.AudioUtils;
+import com.coderwjq.mediaplayer.utils.FilterUtils;
+import com.coderwjq.mediaplayer.utils.SPUtils;
 import com.coderwjq.mediaplayer.utils.StringUtils;
 
 import butterknife.BindView;
@@ -39,12 +43,11 @@ import io.vov.vitamio.widget.VideoView;
  */
 
 public class VideoPlayerActivity extends BaseActivity {
+    public static final String SCREEN_BRIGHTNESS = "screen_brightness";
     private static final String TAG = "VideoPlayerActivity";
-
     private static final int MSG_UPDATE_SYSTEM_TIME = 0;
     private static final int MSG_UPDATE_POSITION = 1;
     private static final int MSG_HIDE_CONTROLLER = 2;
-
     @BindView(R.id.video_view)
     VideoView mVideoView;
     @BindView(R.id.btn_back)
@@ -110,6 +113,9 @@ public class VideoPlayerActivity extends BaseActivity {
     private GestureDetector mGestureDetector;
     private BatteryChangeReceiver mBatteryChangeReceiver;
     private int mNormalVolume;
+    private float mStartY;
+    private int mStartVolume;
+    private float mStartBrightness;
 
     public static void invoke(Activity srcActivity, VideoItem videoItem) {
         Intent intent = new Intent();
@@ -165,6 +171,27 @@ public class VideoPlayerActivity extends BaseActivity {
 
         // 初始化声音相关数据
         initAudioData();
+
+        // 初始化默认屏幕亮度
+        initScreenBrightness();
+    }
+
+    private void initScreenBrightness() {
+        float defaultBrightness = SPUtils.getSingleton(getApplicationContext()).getFloat(SCREEN_BRIGHTNESS);
+        Log.e(TAG, "initScreenBrightness: 初始化默认屏幕亮度:" + defaultBrightness);
+        setScreenBrightness(defaultBrightness);
+    }
+
+    private float getScreenBrightness() {
+        float activityBrightness = ActivityBrightnessManager.getActivityBrightness(VideoPlayerActivity.this);
+        return activityBrightness == -1.0f ? 1.0f : activityBrightness;
+    }
+
+    private void setScreenBrightness(float value) {
+        value = FilterUtils.brightnessFilter(value);
+
+        ActivityBrightnessManager.setActivityBrightness(value, VideoPlayerActivity.this);
+        saveCurrentBrightness();
     }
 
     private void initAudioData() {
@@ -286,7 +313,43 @@ public class VideoPlayerActivity extends BaseActivity {
     public boolean onTouchEvent(MotionEvent event) {
         mGestureDetector.onTouchEvent(event);
 
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mStartY = event.getY();
+                mStartVolume = getCurrentVolume();
+                mStartBrightness = getScreenBrightness();
+                break;
+            case MotionEvent.ACTION_UP:
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float currentY = event.getY();
+                // 手指划过屏幕的距离
+                float offsetY = currentY - mStartY;
+                // 手指划过屏幕的百分比
+                float movePercent = offsetY / getScreenHeight();
+                if (event.getX() < getScreenWidth() / 2) {
+                    // 处理屏幕亮度
+                    adjustBrightness(movePercent);
+                } else {
+                    // 处理音量
+                    adjustVolume(movePercent);
+                }
+                break;
+        }
+
         return super.onTouchEvent(event);
+    }
+
+    private void adjustBrightness(float movePercent) {
+        float finalBrightness = mStartBrightness - movePercent;
+        finalBrightness = FilterUtils.brightnessFilter(finalBrightness);
+        setScreenBrightness(finalBrightness);
+    }
+
+    private void adjustVolume(float movePercent) {
+        int offsetVolume = (int) (movePercent * AudioUtils.getSingleton(getApplicationContext()).getMaxMediaVolume());
+        int finalVolume = mStartVolume - offsetVolume;
+        setCurrentVolume(finalVolume);
     }
 
     @Override
@@ -295,6 +358,15 @@ public class VideoPlayerActivity extends BaseActivity {
         // TODO: add setContentView(...) invocation
         ButterKnife.bind(this);
     }
+
+    private int getScreenHeight() {
+        return getResources().getDisplayMetrics().heightPixels;
+    }
+
+    private int getScreenWidth() {
+        return getResources().getDisplayMetrics().widthPixels;
+    }
+
 
     private void hideOrShowController() {
         if (isControllerShowing) {
@@ -321,6 +393,26 @@ public class VideoPlayerActivity extends BaseActivity {
         if (mBatteryChangeReceiver != null) {
             unregisterReceiver(mBatteryChangeReceiver);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    private void saveCurrentBrightness() {
+        float screenBrightness = getScreenBrightness();
+        SPUtils.getSingleton(getApplicationContext()).putFloat(SCREEN_BRIGHTNESS, screenBrightness);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     private class BatteryChangeReceiver extends BroadcastReceiver {

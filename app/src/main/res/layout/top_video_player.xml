@@ -20,6 +20,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:lines="1"
             android:text="文件名"
             android:textColor="@color/color_white"
             android:textSize="16sp"/>
@@ -56,12 +57,14 @@
         <!-- 静音按钮 -->
 
         <ImageView
+            android:id="@+id/iv_mute"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/video_mute_selector"/>
 
         <!-- 音量控制条 -->
         <SeekBar
+            android:id="@+id/sb_volume_controller"
             style="@android:style/Widget.SeekBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
