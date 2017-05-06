@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.coderwjq.mediaplayer.R;
 import com.coderwjq.mediaplayer.bean.VideoItem;
+import com.coderwjq.mediaplayer.utils.StringUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -65,6 +66,7 @@ public class VideoPlayerActivity extends BaseActivity {
             super.handleMessage(msg);
             switch (msg.what) {
                 case MSG_UPDATE_SYSTEM_TIME:
+                    addSystemTimeUpdate();
                     break;
                 case MSG_UPDATE_POSITION:
                     break;
@@ -113,6 +115,9 @@ public class VideoPlayerActivity extends BaseActivity {
     @Override
     protected void initView() {
         ButterKnife.bind(this);
+
+        // 添加系统时间更新
+        addSystemTimeUpdate();
     }
 
     @Override
@@ -130,8 +135,7 @@ public class VideoPlayerActivity extends BaseActivity {
 
     private void hideControllerWhenInit() {
         // getMeasuredHeight()是在measure方法执行后就能获取到控件的高度，获取的结果可能不准确
-        mLlTopController.measure(0, 0);
-        ViewCompat.animate(mLlTopController).translationY(-mLlTopController.getMeasuredHeight());
+        // mLlTopController.measure(0, 0);
 
         // getHeight()需要在onLayout以后才可以获得控件的高度，为准确值
         mLlBottomController.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -139,6 +143,7 @@ public class VideoPlayerActivity extends BaseActivity {
             public void onGlobalLayout() {
                 mLlBottomController.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
+                ViewCompat.animate(mLlTopController).translationY(-mLlTopController.getHeight());
                 ViewCompat.animate(mLlBottomController).translationY(mLlBottomController.getHeight());
             }
         });
@@ -160,6 +165,12 @@ public class VideoPlayerActivity extends BaseActivity {
         mGestureDetector = new GestureDetector(this, new OnVideoGestureListener());
         // 添加电量监听
         addBatteryChangeReceiver();
+
+    }
+
+    private void addSystemTimeUpdate() {
+        mTvSystemTime.setText(StringUtils.formatSystemTime());
+        mHandler.sendEmptyMessageDelayed(MSG_UPDATE_SYSTEM_TIME, 500);
     }
 
     private void addBatteryChangeReceiver() {
@@ -224,7 +235,13 @@ public class VideoPlayerActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // 移除电量监听
         removeBatteryChangeReceiver();
+        // 移除系统时间更新
+        removeSystemTimeUpdate();
+    }
+
+    private void removeSystemTimeUpdate() {
     }
 
     private void removeBatteryChangeReceiver() {
