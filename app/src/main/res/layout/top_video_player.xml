@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/ll_top_controller"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical">
@@ -24,15 +25,19 @@
             android:textSize="16sp"/>
 
         <!-- 电量 -->
-        <ImageView
+        <TextView
+            android:id="@+id/tv_battery_level"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="6dp"
             android:layout_marginRight="6dp"
-            android:src="@drawable/ic_battery_100"/>
+            android:text="10%"
+            android:textColor="@color/color_white"
+            android:textSize="16sp"/>
 
         <!-- 系统时间 -->
         <TextView
+            android:id="@+id/tv_system_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00:00"
