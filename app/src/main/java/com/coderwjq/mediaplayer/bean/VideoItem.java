@@ -5,12 +5,25 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
+import java.util.ArrayList;
+
 /**
  * @Created by coderwjq on 2017/5/4 17:32.
  * @Desc
  */
 
 public class VideoItem implements Parcelable {
+    public static final Parcelable.Creator<VideoItem> CREATOR = new Parcelable.Creator<VideoItem>() {
+        @Override
+        public VideoItem createFromParcel(Parcel source) {
+            return new VideoItem(source);
+        }
+
+        @Override
+        public VideoItem[] newArray(int size) {
+            return new VideoItem[size];
+        }
+    };
     private String title;
     private int duration;
     private int size;
@@ -40,6 +53,31 @@ public class VideoItem implements Parcelable {
         this.duration = duration;
         this.size = size;
         this.path = path;
+    }
+
+    protected VideoItem(Parcel in) {
+        this.title = in.readString();
+        this.duration = in.readInt();
+        this.path = in.readString();
+        this.size = in.readInt();
+    }
+
+    /**
+     * 从cursor中解析出对象集合
+     *
+     * @param cursor
+     */
+    public static ArrayList<VideoItem> getListData(Cursor cursor) {
+        if (cursor == null || cursor.getCount() == 0) {
+            new RuntimeException("null cursor");
+        }
+        ArrayList<VideoItem> videoItems = new ArrayList<>();
+        cursor.moveToPosition(-1);
+        while (cursor.moveToNext()) {
+            VideoItem videoItem = new VideoItem(cursor);
+            videoItems.add(videoItem);
+        }
+        return videoItems;
     }
 
     public String getTitle() {
@@ -96,23 +134,4 @@ public class VideoItem implements Parcelable {
         dest.writeString(this.path);
         dest.writeInt(this.size);
     }
-
-    protected VideoItem(Parcel in) {
-        this.title = in.readString();
-        this.duration = in.readInt();
-        this.path = in.readString();
-        this.size = in.readInt();
-    }
-
-    public static final Parcelable.Creator<VideoItem> CREATOR = new Parcelable.Creator<VideoItem>() {
-        @Override
-        public VideoItem createFromParcel(Parcel source) {
-            return new VideoItem(source);
-        }
-
-        @Override
-        public VideoItem[] newArray(int size) {
-            return new VideoItem[size];
-        }
-    };
 }

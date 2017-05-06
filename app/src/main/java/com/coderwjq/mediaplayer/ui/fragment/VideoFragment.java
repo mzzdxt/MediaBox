@@ -14,6 +14,8 @@ import com.coderwjq.mediaplayer.bean.VideoItem;
 import com.coderwjq.mediaplayer.db.MediaAsyncQueryHandler;
 import com.coderwjq.mediaplayer.ui.activity.VideoPlayerActivity;
 
+import java.util.ArrayList;
+
 import butterknife.BindView;
 
 /**
@@ -36,9 +38,9 @@ public class VideoFragment extends BaseFragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // 获取到被点击的数据
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-                VideoItem videoItem = new VideoItem(cursor);
+                ArrayList<VideoItem> listData = VideoItem.getListData(cursor);
                 // 打开新界面进行播放
-                VideoPlayerActivity.invoke(getActivity(), videoItem);
+                VideoPlayerActivity.invoke(getActivity(), listData, position);
             }
         });
     }

@@ -163,6 +163,7 @@ public class VideoPlayerActivity extends BaseActivity {
         }
     };
     private int mMediaMaxVolume;
+    private VolumeChangeReceiver mVolumeChangeReceiver;
 
     public static void invoke(Activity srcActivity, VideoItem videoItem) {
         Intent intent = new Intent();
@@ -321,10 +322,28 @@ public class VideoPlayerActivity extends BaseActivity {
         mGestureDetector = new GestureDetector(this, new OnVideoGestureListener());
         // 添加电量监听
         addBatteryChangeReceiver();
+        // 添加声音变化监听
+        addVolumeChangeReceiver();
         // 添加声音控制条的监听
         mSbVolumeController.setOnSeekBarChangeListener(mOnSeekBarChangeListener);
         mSbPlayProgress.setOnSeekBarChangeListener(mOnSeekBarChangeListener);
     }
+
+    private void addVolumeChangeReceiver() {
+        IntentFilter filter = new IntentFilter("android.media.VOLUME_CHANGED_ACTION");
+        if (mVolumeChangeReceiver == null) {
+            mVolumeChangeReceiver = new VolumeChangeReceiver();
+        }
+        registerReceiver(mVolumeChangeReceiver, filter);
+    }
+
+    private void removeVolumeChangeReceiver() {
+        if (mVolumeChangeReceiver != null) {
+            unregisterReceiver(mVolumeChangeReceiver);
+            mVolumeChangeReceiver = null;
+        }
+    }
+
 
     private void addSystemTimeUpdate() {
         mTvSystemTime.setText(StringUtils.formatSystemTime());
@@ -359,6 +378,7 @@ public class VideoPlayerActivity extends BaseActivity {
                 playNextVideo();
                 break;
             case R.id.btn_full_screen:
+                mToastor.showSingletonToast("新功能，敬请期待...");
                 break;
         }
     }
@@ -443,6 +463,9 @@ public class VideoPlayerActivity extends BaseActivity {
                 float offsetY = currentY - mStartY;
                 // 手指划过屏幕的百分比
                 float movePercent = offsetY / getScreenHeight();
+                if (Math.abs(movePercent) < 0.01) {
+                    return false;
+                }
                 if (event.getX() < getScreenWidth() / 2) {
                     // 处理屏幕亮度
                     adjustBrightness(movePercent);
@@ -474,7 +497,6 @@ public class VideoPlayerActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // TODO: add setContentView(...) invocation
         ButterKnife.bind(this);
     }
 
@@ -502,12 +524,14 @@ public class VideoPlayerActivity extends BaseActivity {
         super.onDestroy();
         // 移除电量监听
         removeBatteryChangeReceiver();
+        removeVolumeChangeReceiver();
         mHandler.removeCallbacksAndMessages(null);
     }
 
     private void removeBatteryChangeReceiver() {
         if (mBatteryChangeReceiver != null) {
             unregisterReceiver(mBatteryChangeReceiver);
+            mBatteryChangeReceiver = null;
         }
     }
 
@@ -539,6 +563,13 @@ public class VideoPlayerActivity extends BaseActivity {
             Log.e(TAG, "onReceive: currentBatteryLevel:" + level);
             // 更新电量
             mTvBatteryLevel.setText(level + "%");
+        }
+    }
+
+    private class VolumeChangeReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mSbVolumeController.setProgress(getCurrentVolume());
         }
     }
 

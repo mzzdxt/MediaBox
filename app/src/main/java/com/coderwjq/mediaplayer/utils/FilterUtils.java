@@ -14,4 +14,13 @@ public class FilterUtils {
         }
         return value;
     }
+
+    public static int volumeFilter(int value, int maxValue) {
+        if (value <= 0) {
+            value = 0;
+        } else if (value >= maxValue) {
+            value = maxValue;
+        }
+        return value;
+    }
 }
