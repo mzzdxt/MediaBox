@@ -18,10 +18,12 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.coderwjq.mediaplayer.R;
 import com.coderwjq.mediaplayer.bean.VideoItem;
+import com.coderwjq.mediaplayer.utils.AudioUtils;
 import com.coderwjq.mediaplayer.utils.StringUtils;
 
 import butterknife.BindView;
@@ -59,6 +61,35 @@ public class VideoPlayerActivity extends BaseActivity {
     TextView mTvBatteryLevel;
     @BindView(R.id.tv_system_time)
     TextView mTvSystemTime;
+    @BindView(R.id.iv_mute)
+    ImageView mIvMute;
+    @BindView(R.id.sb_volume_controller)
+    SeekBar mSbVolumeController;
+    SeekBar.OnSeekBarChangeListener onSeekBarChangeListener = new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (!fromUser) {
+                return;
+            }
+
+            switch (seekBar.getId()) {
+                case R.id.sb_volume_controller:
+                    // 修改当前的音量值
+                    setCurrentVolume(progress);
+                    break;
+            }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
+        }
+    };
     private boolean isControllerShowing = false;
     private Handler mHandler = new Handler() {
         @Override
@@ -78,6 +109,7 @@ public class VideoPlayerActivity extends BaseActivity {
     };
     private GestureDetector mGestureDetector;
     private BatteryChangeReceiver mBatteryChangeReceiver;
+    private int mNormalVolume;
 
     public static void invoke(Activity srcActivity, VideoItem videoItem) {
         Intent intent = new Intent();
@@ -85,7 +117,6 @@ public class VideoPlayerActivity extends BaseActivity {
         intent.putExtra("video_item", videoItem);
         srcActivity.startActivity(intent);
     }
-
 
     /**
      * 显示播放器的控制面板
@@ -131,6 +162,19 @@ public class VideoPlayerActivity extends BaseActivity {
 
         // 初始化的时候隐藏控制面板
         hideControllerWhenInit();
+
+        // 初始化声音相关数据
+        initAudioData();
+    }
+
+    private void initAudioData() {
+        int mediaMaxVolume = AudioUtils.getSingleton(this).getMaxMediaVolume();
+        int mediaCurrentVolume = AudioUtils.getSingleton(this).getCurrentMediaVolume();
+        Log.e(TAG, "initAudioData: mediaMaxVolume:" + mediaMaxVolume + " mediaCurrentVolume:" + mediaCurrentVolume);
+        // 设置声音进度条的最大值
+        mSbVolumeController.setMax(mediaMaxVolume);
+        // 设置声音进度条的当前值
+        mSbVolumeController.setProgress(mediaCurrentVolume);
     }
 
     private void hideControllerWhenInit() {
@@ -165,7 +209,8 @@ public class VideoPlayerActivity extends BaseActivity {
         mGestureDetector = new GestureDetector(this, new OnVideoGestureListener());
         // 添加电量监听
         addBatteryChangeReceiver();
-
+        // 添加声音控制条的监听
+        mSbVolumeController.setOnSeekBarChangeListener(onSeekBarChangeListener);
     }
 
     private void addSystemTimeUpdate() {
@@ -181,7 +226,7 @@ public class VideoPlayerActivity extends BaseActivity {
         registerReceiver(mBatteryChangeReceiver, filter);
     }
 
-    @OnClick({R.id.btn_back, R.id.video_player_iv_pause})
+    @OnClick({R.id.btn_back, R.id.video_player_iv_pause, R.id.iv_mute})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_back:
@@ -190,7 +235,34 @@ public class VideoPlayerActivity extends BaseActivity {
             case R.id.video_player_iv_pause:
                 updatePlayerState();
                 break;
+            case R.id.iv_mute:
+                switchMuteStatus();
+                break;
         }
+    }
+
+    /**
+     * 切换静音按钮状态
+     */
+    private void switchMuteStatus() {
+        if (getCurrentVolume() != 0) {
+            // 当前非静音状态
+            mNormalVolume = getCurrentVolume();
+            setCurrentVolume(0);
+        } else {
+            // 当前为静音状态
+            setCurrentVolume(mNormalVolume);
+        }
+    }
+
+    private int getCurrentVolume() {
+        return AudioUtils.getSingleton(getApplicationContext()).getCurrentMediaVolume();
+    }
+
+    private void setCurrentVolume(int progress) {
+        AudioUtils.getSingleton(getApplicationContext()).setCurrentMediaVolume(progress);
+        // 修改当前进度值
+        mSbVolumeController.setProgress(progress);
     }
 
     private void updatePlayerState() {
@@ -242,6 +314,7 @@ public class VideoPlayerActivity extends BaseActivity {
     }
 
     private void removeSystemTimeUpdate() {
+        mHandler.removeMessages(MSG_UPDATE_SYSTEM_TIME);
     }
 
     private void removeBatteryChangeReceiver() {
