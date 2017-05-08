@@ -25,8 +25,10 @@ public class SplashActivity extends BaseActivity {
                     public void accept(@NonNull Boolean aBoolean) throws Exception {
                         if (!aBoolean) {
                             mToastor.showSingletonToast("没有权限读取文件");
+                            finish();
+                        } else {
+                            startMainActivity();
                         }
-                        startMainActivity();
                     }
                 });
     }

@@ -31,18 +31,12 @@ public class VideoFragment extends BaseFragment {
     private VideoListAdapter mVideoListAdapter;
 
     @Override
-    protected void initListener() {
-        mCommonListView.setAdapter(mVideoListAdapter);
-        mCommonListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // 获取到被点击的数据
-                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-                ArrayList<VideoItem> listData = VideoItem.getListData(cursor);
-                // 打开新界面进行播放
-                VideoPlayerActivity.invoke(getActivity(), listData, position);
-            }
-        });
+    protected int getLayoutId() {
+        return R.layout.fragment_video;
+    }
+
+    @Override
+    protected void initView(View view) {
     }
 
     @Override
@@ -58,12 +52,18 @@ public class VideoFragment extends BaseFragment {
     }
 
     @Override
-    protected void initView(View view) {
-    }
-
-    @Override
-    protected int getLayoutId() {
-        return R.layout.fragment_video;
+    protected void initListener() {
+        mCommonListView.setAdapter(mVideoListAdapter);
+        mCommonListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // 获取到被点击的数据
+                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                ArrayList<VideoItem> listData = VideoItem.getListData(cursor);
+                // 打开新界面进行播放
+                VideoPlayerActivity.invoke(getActivity(), listData, position);
+            }
+        });
     }
 
 }

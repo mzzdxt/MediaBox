@@ -4,6 +4,7 @@ import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
 import android.database.Cursor;
 
+import com.coderwjq.mediaplayer.adapter.MusicListAdapter;
 import com.coderwjq.mediaplayer.adapter.VideoListAdapter;
 
 /**
@@ -29,11 +30,14 @@ public class MediaAsyncQueryHandler extends AsyncQueryHandler {
     protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
         // empty
         super.onQueryComplete(token, cookie, cursor);
-//        CursorUtils.printCursor(cursor);
 
         // TODO:instanceof和父类比较
         if (cookie instanceof VideoListAdapter) {
             VideoListAdapter cursorAdapter = (VideoListAdapter) cookie;
+            cursorAdapter.swapCursor(cursor);
+        } else if (cookie instanceof MusicListAdapter) {
+//            CursorUtils.printCursor(cursor);
+            MusicListAdapter cursorAdapter = (MusicListAdapter) cookie;
             cursorAdapter.swapCursor(cursor);
         }
     }

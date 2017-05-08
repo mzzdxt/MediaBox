@@ -37,4 +37,12 @@ public class SPUtils {
         return mSharedPreferences.getFloat(key, -1.0f);
     }
 
+    public void putInt(String key, int value) {
+        mSharedPreferences.edit().putInt(key, value).commit();
+    }
+
+    public int getInt(String key) {
+        return mSharedPreferences.getInt(key, 0);
+    }
+
 }
