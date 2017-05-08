@@ -2,6 +2,7 @@ package com.coderwjq.mediaplayer.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -57,4 +58,15 @@ public class MusicPlayerService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    @Override
+    public void unbindService(ServiceConnection conn) {
+        super.unbindService(conn);
+        Log.d(TAG, "unbindService() called with: conn = [" + conn + "]");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy() called");
+    }
 }

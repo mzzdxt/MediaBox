@@ -10,8 +10,10 @@ import android.widget.TextView;
 
 import com.coderwjq.mediaplayer.R;
 import com.coderwjq.mediaplayer.adapter.MainActivityPagerAdatper;
+import com.coderwjq.mediaplayer.service.MusicPlayerService;
 import com.coderwjq.mediaplayer.ui.fragment.MusicFragment;
 import com.coderwjq.mediaplayer.ui.fragment.VideoFragment;
+import com.coderwjq.mediaplayer.utils.ServiceStateUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,5 +110,22 @@ public class MainActivity extends BaseActivity {
                 mMainViewpager.setCurrentItem(1);
                 break;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        stopMusicPlayerService();
+    }
+
+    private void stopMusicPlayerService() {
+        boolean musicState = ServiceStateUtils.isServiceRunning(MainActivity.this, "com.coderwjq.mediaplayer.service.MusicPlayerService");
+
+        if (!musicState) {
+            return;
+        }
+
+        stopService(new Intent(MainActivity.this, MusicPlayerService.class));
     }
 }

@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 
 /**
  * @Created by coderwjq on 2017/5/8 16:22.
@@ -90,8 +89,6 @@ public class LyricView extends android.support.v7.widget.AppCompatTextView {
         mPaint.getTextBounds(mText, 0, mText.length(), bounds);
         mCurrentSize = getTextSize(mCurrentSize);
         mPaint.setTextSize(mCurrentSize);
-
-        Log.d(TAG, "onDraw() called with: size = [" + mPaint.getTextSize() + "]");
 
         int halfTextHeight = bounds.height() / 2;
         int halfTextWidth = bounds.width() / 2;
