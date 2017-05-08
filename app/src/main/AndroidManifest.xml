@@ -39,8 +39,7 @@
             android:theme="@android:style/Theme.NoTitleBar"
             android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity
-            android:name=".ui.activity.MusicPlayerActivity"
-            android:theme="@style/TranslucentTheme"/>
+            android:name=".ui.activity.MusicPlayerActivity"/>
 
         <service
             android:name=".service.MusicPlayerService"

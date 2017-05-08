@@ -1,15 +1,13 @@
 package com.coderwjq.mediaplayer.ui.activity;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -18,9 +16,13 @@ import android.widget.TextView;
 import com.coderwjq.mediaplayer.R;
 import com.coderwjq.mediaplayer.bean.MusicItem;
 import com.coderwjq.mediaplayer.binder.MusicPlayerBinder;
-import com.coderwjq.mediaplayer.common.Constant;
+import com.coderwjq.mediaplayer.event.MusicPreparedEvent;
 import com.coderwjq.mediaplayer.service.MusicPlayerService;
 import com.coderwjq.mediaplayer.utils.StringUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
@@ -38,6 +40,7 @@ import static com.coderwjq.mediaplayer.common.Constant.PLAYMODE_SINGLE_REPEAT;
  */
 
 public class MusicPlayerActivity extends BaseActivity {
+    private static final String TAG = "MusicPlayerActivity";
 
     private static final int MSG_UPDATE_POSITION = 0;
     @BindView(R.id.btn_back)
@@ -88,8 +91,6 @@ public class MusicPlayerActivity extends BaseActivity {
 
         }
     };
-    private AudioReceiver mAudioReceiver;
-    ;
 
     public static void invoke(Activity srcActivity, ArrayList<MusicItem> musicItems, int position) {
         Intent intent = new Intent(srcActivity, MusicPlayerActivity.class);
@@ -118,10 +119,6 @@ public class MusicPlayerActivity extends BaseActivity {
 
     @Override
     protected void initListener() {
-        // 注册广播接收界面更新
-        IntentFilter filter = new IntentFilter(Constant.ACTION_MUSIC_PREPARED);
-        mAudioReceiver = new AudioReceiver();
-        registerReceiver(mAudioReceiver, filter);
         mAudioPlayerSkPosition.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -145,7 +142,6 @@ public class MusicPlayerActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mAudioReceiver);
 
         if (mServiceConnection != null) {
             unbindService(mServiceConnection);
@@ -208,6 +204,7 @@ public class MusicPlayerActivity extends BaseActivity {
     }
 
     private void updatePlayButton() {
+        Log.e(TAG, "updatePlayButton: isPlaying:" + mBinder.isPlaying());
         if (mBinder.isPlaying()) {
             mAudioPlayerIvPause.setImageResource(R.drawable.audio_pause_selector);
             startUpdatePosition();
@@ -238,30 +235,39 @@ public class MusicPlayerActivity extends BaseActivity {
         mAudioPlayerSkPosition.setProgress(position);
     }
 
-    private final class AudioReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void handleOnMusicPrepared(MusicPreparedEvent event) {
+        // 音乐开始播放
+        updatePlayButton();
 
-            if (Constant.ACTION_MUSIC_PREPARED.equals(intent.getAction())) {
-                // 音乐开始播放
-                updatePlayButton();
+        // 更新歌曲信息
+        MusicItem audioItem = event.getMusicItem();
+        mAudioPlayerTvTitle.setText(audioItem.getTitle());
+        mAudioPlayerTvArties.setText(audioItem.getArtist());
 
-                // 更新歌曲信息
-                MusicItem audioItem = intent.getParcelableExtra("music_item");
-                mAudioPlayerTvTitle.setText(audioItem.getTitle());
-                mAudioPlayerTvArties.setText(audioItem.getArtist());
+        // 开启进度更新
+        mAudioPlayerSkPosition.setMax(mBinder.getDuration());
+        startUpdatePosition();
+    }
 
-                // 开启进度更新
-                mAudioPlayerSkPosition.setMax(mBinder.getDuration());
-                startUpdatePosition();
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void handleOnMusicCompleted() {
+        // 播放结束
+        mHandler.removeMessages(MSG_UPDATE_POSITION);
 
-            } else if (Constant.ACTION_MUSIC_COMPLETED.equals(intent.getAction())) {
-                // 播放结束
-                mHandler.removeMessages(MSG_UPDATE_POSITION);
+        // 更新暂停按钮使用的图片
+        updatePlayButton();
+    }
 
-                // 更新暂停按钮使用的图片
-                updatePlayButton();
-            }
-        }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 }

@@ -36,4 +36,6 @@ dependencies {
     // common utils
     compile 'com.luffykou:android-common-utils:1.1.3'
     compile project(':vitamio')
+    // eventbus
+    compile 'org.greenrobot:eventbus:3.0.0'
 }

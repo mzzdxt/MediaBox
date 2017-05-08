@@ -1,15 +1,17 @@
 package com.coderwjq.mediaplayer.binder;
 
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
 
 import com.coderwjq.mediaplayer.bean.MusicItem;
-import com.coderwjq.mediaplayer.common.Constant;
+import com.coderwjq.mediaplayer.event.MusicCompletedEvent;
+import com.coderwjq.mediaplayer.event.MusicPreparedEvent;
 import com.coderwjq.mediaplayer.utils.SPUtils;
 import com.litesuits.common.assist.Toastor;
 import com.litesuits.common.utils.RandomUtil;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,19 +64,19 @@ public class MusicPlayerBinder extends Binder {
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    // 通知界面更新
-                    notifyUIToRefresh(START_PLAY_MUSIC);
                     // 开始播放
                     mMediaPlayer.start();
+                    // 通知界面更新
+                    notifyUIToRefresh(START_PLAY_MUSIC);
                 }
             });
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    // 通知界面播放完毕
-                    notifyUIToRefresh(COMPLETE_PLAY_MUSIC);
                     // 根据用户设置，自动播放下一首
                     autoPlayNextMusic();
+                    // 通知界面播放完毕
+                    notifyUIToRefresh(COMPLETE_PLAY_MUSIC);
                 }
             });
             mMediaPlayer.prepareAsync();
@@ -105,16 +107,14 @@ public class MusicPlayerBinder extends Binder {
                 refreshCurrentMusic();
                 break;
             case COMPLETE_PLAY_MUSIC:
-                mContext.sendBroadcast(new Intent(Constant.ACTION_MUSIC_COMPLETED));
+                EventBus.getDefault().post(new MusicCompletedEvent());
                 break;
         }
     }
 
     public void refreshCurrentMusic() {
         MusicItem musicItem = mMusicItems.get(mCurrentPosotion);
-        Intent intent = new Intent(Constant.ACTION_MUSIC_PREPARED);
-        intent.putExtra("music_item", musicItem);
-        mContext.sendBroadcast(intent);
+        EventBus.getDefault().post(new MusicPreparedEvent(musicItem));
     }
 
     public boolean isPlaying() {
