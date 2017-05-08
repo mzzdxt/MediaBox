@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="6dp"
         android:layout_marginTop="6dp"
-        android:progress="50"
+        android:progress="0"
         android:progressDrawable="@drawable/audio_seekbar_drawable"
         android:thumb="@drawable/audio_seek_thumb"
         android:thumbOffset="0dp"/>

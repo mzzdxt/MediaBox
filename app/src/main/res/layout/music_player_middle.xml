@@ -16,12 +16,11 @@
         android:textSize="16sp"/>
 
     <!-- 歌词 -->
-    <TextView
+    <com.coderwjq.mediaplayer.ui.view.LyricView
+        android:id="@+id/lyr_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="歌词"
-        android:textColor="@color/color_white"
-        android:textSize="20sp"/>
+        android:layout_below="@id/audio_player_tv_arties"
+        android:gravity="center"/>
 
 </RelativeLayout>

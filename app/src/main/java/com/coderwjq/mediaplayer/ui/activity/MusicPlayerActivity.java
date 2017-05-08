@@ -18,6 +18,7 @@ import com.coderwjq.mediaplayer.bean.MusicItem;
 import com.coderwjq.mediaplayer.binder.MusicPlayerBinder;
 import com.coderwjq.mediaplayer.event.MusicPreparedEvent;
 import com.coderwjq.mediaplayer.service.MusicPlayerService;
+import com.coderwjq.mediaplayer.ui.view.LyricView;
 import com.coderwjq.mediaplayer.utils.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -43,6 +44,7 @@ public class MusicPlayerActivity extends BaseActivity {
     private static final String TAG = "MusicPlayerActivity";
 
     private static final int MSG_UPDATE_POSITION = 0;
+    private static final int MSG_ROLL_LYRIC = 1;
     @BindView(R.id.btn_back)
     ImageView mBtnBack;
     @BindView(R.id.audio_player_tv_title)
@@ -63,6 +65,8 @@ public class MusicPlayerActivity extends BaseActivity {
     ImageView mAudioPlayerIvNext;
     @BindView(R.id.btn_show_list)
     ImageView mBtnShowList;
+    @BindView(R.id.lyr_view)
+    LyricView mLyrView;
     private MusicPlayerBinder mBinder;
     private Handler mHandler = new Handler() {
         @Override
@@ -72,6 +76,9 @@ public class MusicPlayerActivity extends BaseActivity {
             switch (msg.what) {
                 case MSG_UPDATE_POSITION:
                     startUpdatePosition();
+                    break;
+                case MSG_ROLL_LYRIC:
+                    startUpdateLyricView();
                     break;
             }
         }
@@ -146,6 +153,8 @@ public class MusicPlayerActivity extends BaseActivity {
         if (mServiceConnection != null) {
             unbindService(mServiceConnection);
         }
+
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     @OnClick({R.id.btn_back, R.id.audio_player_iv_playmode, R.id.audio_player_iv_pre,
@@ -208,9 +217,11 @@ public class MusicPlayerActivity extends BaseActivity {
         if (mBinder.isPlaying()) {
             mAudioPlayerIvPause.setImageResource(R.drawable.audio_pause_selector);
             startUpdatePosition();
+            startUpdateLyricView();
         } else {
             mAudioPlayerIvPause.setImageResource(R.drawable.audio_play_selector);
             stopUpdatePosition();
+            stopUpdateLyricView();
         }
     }
 
@@ -248,6 +259,18 @@ public class MusicPlayerActivity extends BaseActivity {
         // 开启进度更新
         mAudioPlayerSkPosition.setMax(mBinder.getDuration());
         startUpdatePosition();
+    }
+
+    /**
+     * 开始更新歌词
+     */
+    private void startUpdateLyricView() {
+        mLyrView.breathing();
+        mHandler.sendEmptyMessage(MSG_ROLL_LYRIC);
+    }
+
+    private void stopUpdateLyricView() {
+        mHandler.removeMessages(MSG_ROLL_LYRIC);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
