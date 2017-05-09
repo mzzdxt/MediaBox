@@ -1,2 +1,2 @@
-# AndroidMediaDemo
-Android下的多媒体播放demo
+# 影音盒子
+一款基于Android开发的无广告的手机视频和音频播放器
